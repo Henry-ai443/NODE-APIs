@@ -45,4 +45,41 @@ const getContactById = (req, res) => {
         res.status(200).json(results[0]);
     });
 }
-module.exports = { createContact, getContacts, getContactById };
+
+const updateContact = (req, res) => {
+    const contactId = req.params.id;
+    const { name, email, phone } = req.body;
+
+    if(!name || !email || !phone){
+        return res.status(400).json({ error: 'Please provide name, email, and phone' });
+    }
+
+    const sql = 'UPDATE contacts SET name = ?, email = ?, phone = ? WHERE id = ?';
+    db.query(sql, [name, email, phone, contactId], (err, result) => {
+        if(err){
+            console.error('Error updating contact:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if(result.affectedRows === 0){
+            return res.status(404).json({ error: 'Contact not found' });
+        }
+        res.status(200).json({ message: 'Contact updated successfully' });
+    });
+}
+
+const deleteContact = (req, res) => {
+    const {id} = req.params.id;
+     const sql = 'DELETE FROM contacts WHERE id = ?';
+     db.query(sql, [id], (err, result) => {
+        if(err){
+            console.error('Error deleting contact:', err);
+            return res.status(500).json({ error:'Database error'});
+        }
+
+        if(result.affectedRows === 0){
+            return res.status(404).json({error:"Contact not found"})
+        }
+        res.json({message:"Contact deleted successfully"})
+     })
+}
+module.exports = { createContact, getContacts, getContactById, updateContact, deleteContact};
